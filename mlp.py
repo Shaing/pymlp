@@ -16,25 +16,59 @@ def get_two_spiral_data():
 		c2[i] = (-x,-y,0,1)
 	return np.vstack((c1, c2)).copy()
 
+def get_double_moon_data():
+	N = 250
+	theta1 = np.linspace(-180, 180, N) * np.pi / 360
+	r = 8
+	x1 = -5 + (r * np.sin(theta1)) + np.random.random((1, N))
+	y1 = (r * np.cos(theta1)) + np.random.random((1, N))
+	x2 = 5 + (r * np.sin(theta1)) + np.random.random((1, N))
+	y2 = (-r * np.cos(theta1)) + np.random.random((1, N))
+
+	l_row = []
+	l_col = []
+	for i in range(250):
+		l_row.clear()
+		l_row.append(x1[0][i])
+		l_row.append(y1[0][i])
+		l_row.append(1)
+		l_row.append(0)
+		l_col.append(l_row.copy())
+	
+	for i in range(250):
+		l_row.clear()
+		l_row.append(x2[0][i])
+		l_row.append(y2[0][i])
+		l_row.append(0)
+		l_row.append(1)
+		l_col.append(l_row.copy())
+	c = np.empty((500, 4))
+	for i in range(500):
+		c[i] = l_col[i]
+	return c.copy()
+
 def sigmoidal(_s):
 	return 1 / (1 + np.exp(-_s))
 
 def main():
-	c = np.empty((96 * 2, 4))
-	c = get_two_spiral_data()
+	# c = np.empty((96 * 2, 4))
+	# c = get_two_spiral_data()
 	# print(c)
 	# print(c.ndim)
 	# print(c.shape)
-	plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
+	# plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
 	# plt.show()
+	c = get_double_moon_data()
+	plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+	plt.show()
 
 	''' initialize '''
 	nvectors = c.shape[0] # row size of input pattern
 	b_ninpdim = 2
 	b_ninpdim_1 = b_ninpdim + 1 
-	i_nhid = 40
+	i_nhid = 20
 	i_nhid_1 = i_nhid + 1
-	j_nhid = 20
+	j_nhid = 10
 	j_nhid_1 = j_nhid + 1
 	k_noutdim = 1
 
@@ -62,8 +96,8 @@ def main():
 
 	lower_limit = 0.001
 	iter_max = 15000
-	eta = 0.1
-	beta = 0.3
+	eta = 0.3
+	beta = 0.5
 
 	_iter = 0
 	iter_loop = 0
@@ -77,7 +111,8 @@ def main():
 	delta_i = np.zeros((1, i_nhid))
 
 	''' start F. & B. '''
-
+	ite = []
+	error_r = []
 	while error_avg > lower_limit and _iter < iter_max:
 		_iter = _iter + 1
 		error = 0
@@ -170,13 +205,14 @@ def main():
 			wkj = wkj_temp.copy()
 			wji = wji_temp.copy()
 		
-		# iter_loop = iter_loop + 1
-		# if iter_loop == 1000:
-			# print('[iter] {}'.format(_iter))
-			# print('[error_avg] {}'.format(error/nvectors))
-			# iter_loop = 0
+		ite.append(_iter)
+		error_avg = error / nvectors
+		error_r.append(error_avg)
 		print('[iter] {}'.format(_iter))
-		print('[error_avg] {}'.format(error/nvectors))
+		print('[error_avg] {}'.format(error_avg))
+	plt.clf()
+	plt.plot(ite, error_r)
+	plt.show()
 
 if __name__ == "__main__":
 	main()
