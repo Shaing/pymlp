@@ -48,17 +48,17 @@ def main():
 	old_delwji = np.zeros((j_nhid, i_nhid_1))
 	old_delwib = np.zeros((i_nhid, b_ninpdim_1))
 
-	ob = np.zeros((1, b_ninpdim_1))
-	ob[0][-1] = 1
-	si = np.zeros((1, i_nhid))
-	oi = np.zeros((1, i_nhid_1))
-	oi[0][-1] = 1
-	sj = np.zeros((1, j_nhid))
-	oj = np.zeros((1, j_nhid_1))
-	oj[0][-1] = 1
-	sk = np.zeros((1, k_noutdim))
+	ob = np.zeros((b_ninpdim_1, 1))
+	ob[-1] = 1
+	si = np.zeros((i_nhid, 1))
+	oi = np.zeros((i_nhid_1, 1))
+	oi[-1] = 1
+	sj = np.zeros((j_nhid, 1))
+	oj = np.zeros((j_nhid_1, 1))
+	oj[-1] = 1
+	sk = np.zeros((k_noutdim, 1))
 	ok = np.zeros(sk.shape)
-	dk = np.zeros((1, 1))
+	dk = np.zeros((k_noutdim, 1))
 
 	lower_limit = 0.001
 	iter_max = 15000
@@ -84,23 +84,33 @@ def main():
 
 		''' Forward Computation '''
 		for ivector in range(nvectors):
-			ob[0] = [c[ivector][1], c[ivector][2], 1]
-			dk[0] = [c[ivector][3]]
+			ob = np.array([[c[ivector][1]], [c[ivector][2]], [1]])
+			dk = np.array([[c[ivector][3]]])
 
-			for i in range(i_nhid):
-				si[0][i] = np.vdot(wib[i], ob) 
-				# oi[0][i] = 1 / (1 + np.exp(-si[0][i]))
-				oi[0][i] = sigmoidal(si[0][i])
-			oi[0][-1] = 1.0
+			# for i in range(i_nhid):
+			# 	si[i] = np.dot(wib[i], ob) 
+			# 	# oi[i] = 1 / (1 + np.exp(-si[i]))
+			# 	oi[i] = sigmoidal(si[i])
+			# oi[-1] = 1.0
+			# print(oi)
 
-			for j in range(j_nhid):
-				sj[0][j] = np.vdot(wji[j], oi)
-				oj[0][j] = sigmoidal(sj[0][j])
-			oj[0][-1] = 1.0
+			si = np.dot(wib, ob)
+			oi[:-1] = sigmoidal(si)
+			oi[-1] = 1.0
 
-			for k in range(k_noutdim):
-				sk[0][k] = np.vdot(wkj[k], oj)
-				ok[0][k] = sigmoidal(sk[0][k])
+			# for j in range(j_nhid):
+			# 	sj[j] = np.dot(wji[j], oi)
+			# 	oj[j] = sigmoidal(sj[j])
+			# oj[-1] = 1.0
+			sj = np.dot(wji, oi)
+			oj[:-1] = sigmoidal(sj)
+			oj[-1] = 1.0
+
+			# for k in range(k_noutdim):
+			# 	sk[k] = np.dot(wkj[k], oj)
+			# 	ok[k] = sigmoidal(sk[k])
+			sk = np.dot(wkj, oj)
+			ok = sigmoidal(sk)
 			
 			error = error + sum(abs(dk - ok))
 
@@ -113,30 +123,32 @@ def main():
 			# print(error)
 
 			''' Backward learning '''
-			for k in range(k_noutdim):
-				delta_k[0][k] = (dk[0][k] - ok[0][k]) * ok[0][k] * (1.0 - ok[0][k])
+			# for k in range(k_noutdim):
+			# 	delta_k[k] = (dk[k] - ok[k]) * ok[k] * (1.0 - ok[k])
+			delta_k = (dk - ok) * ok * (1.0 - ok)
 			
 			for j in range(j_nhid_1):
 				for k in range(k_noutdim):
 					wkj_temp[k][j] = wkj[k][j] + \
-									(eta * delta_k[0][k] * oj[0][j]) + \
+									(eta * delta_k[0][k] * oj[j]) + \
 									(beta * old_delwkj[k][j])
-					old_delwkj[k][j] = (eta * delta_k[0][k] * oj[0][j]) + \
+					old_delwkj[k][j] = (eta * delta_k[0][k] * oj[j]) + \
 									(beta * old_delwkj[k][j])
-			
+
 			for j in range(j_nhid):
 				sum_back_kj[0][j] = 0.0
 				for k in range(k_noutdim):
 					sum_back_kj[0][j] = sum_back_kj[0][j] + \
 										(delta_k[0][k] * wkj[k][j])
-				delta_j[0][j] = oj[0][j] * (1.0 - oj[0][j]) * sum_back_kj[0][j]
+				# delta_j[0][j] = oj[j] * (1.0 - oj[j]) * sum_back_kj[0][j]
+			delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj
 
 			for i in range(i_nhid_1):
 				for j in range(j_nhid):
 					wji_temp[j][i] = wji[j][i] + \
-									(eta * delta_j[0][j] * oi[0][i]) + \
+									(eta * delta_j[0][j] * oi[i]) + \
 									(beta * old_delwji[j][i])
-					old_delwji[j][i] = (eta * delta_j[0][j] * oi[0][i]) + \
+					old_delwji[j][i] = (eta * delta_j[0][j] * oi[i]) + \
 									(beta * old_delwji[j][i])
 			
 			for i in range(i_nhid):
@@ -144,14 +156,15 @@ def main():
 				for j in range(j_nhid):
 					sum_back_ji[0][i] = sum_back_ji[0][i] + \
 										(delta_j[0][j] * wji[j][i])
-				delta_i[0][i] = oi[0][i] * (1.0 - oi[0][i]) * sum_back_ji[0][i]
+				# delta_i[0][i] = oi[i] * (1.0 - oi[i]) * sum_back_ji[0][i]
+			delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
 
 			for b in range(b_ninpdim_1):
 				for i in range(i_nhid):
 					wib[i][b] = wib[i][b] + \
-								(eta * delta_i[0][i] * ob[0][b]) + \
+								(eta * delta_i[0][i] * ob[b]) + \
 								(beta * old_delwib[i][b])
-					old_delwib[i][b] = (eta * delta_i[0][i] * ob[0][b]) + \
+					old_delwib[i][b] = (eta * delta_i[0][i] * ob[b]) + \
 								(beta * old_delwib[i][b])
 
 			wkj = wkj_temp.copy()
