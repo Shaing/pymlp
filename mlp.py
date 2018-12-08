@@ -116,50 +116,25 @@ def main():
 
 		''' Forward Computation '''
 		for ivector in range(nvectors):
-			# ob = np.array([[c[ivector][0]], [c[ivector][1]], [1]])
 			ob[0] = c[ivector][0] 
 			ob[1] = c[ivector][1] 
 			ob[2] = 1 
-			# dk = np.array([[c[ivector][2]]])
 			dk[0] = c[ivector][2]
-
-			# for i in range(i_nhid):
-			# 	si[i] = np.dot(wib[i], ob) 
-			# 	# oi[i] = 1 / (1 + np.exp(-si[i]))
-			# 	oi[i] = sigmoidal(si[i])
-			# oi[-1] = 1.0
 
 			si = np.dot(wib, ob)
 			oi[:-1] = sigmoidal(si)
 			oi[-1] = 1.0
 
-			# for j in range(j_nhid):
-			# 	sj[j] = np.dot(wji[j], oi)
-			# 	oj[j] = sigmoidal(sj[j])
-			# oj[-1] = 1.0
 			sj = np.dot(wji, oi)
 			oj[:-1] = sigmoidal(sj)
 			oj[-1] = 1.0
 
-			# for k in range(k_noutdim):
-			# 	sk[k] = np.dot(wkj[k], oj)
-			# 	ok[k] = sigmoidal(sk[k])
 			sk = np.dot(wkj, oj)
 			ok = sigmoidal(sk)
 			
 			error = error + sum(abs(dk - ok))
 
-			# print(si)
-			# print(oi)
-			# print(sj)
-			# print(oj)
-			# print(sk)
-			# print(ok)
-			# print(error)
-
 			''' Backward learning '''
-			# for k in range(k_noutdim):
-			# 	delta_k[k] = (dk[k] - ok[k]) * ok[k] * (1.0 - ok[k])
 			delta_k = (dk - ok) * ok * (1.0 - ok)
 			
 			for j in range(j_nhid_1):
@@ -175,7 +150,6 @@ def main():
 				for k in range(k_noutdim):
 					sum_back_kj[0][j] = sum_back_kj[0][j] + \
 										(delta_k[0][k] * wkj[k][j])
-				# delta_j[0][j] = oj[j] * (1.0 - oj[j]) * sum_back_kj[0][j]
 			delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj
 
 			for i in range(i_nhid_1):
@@ -191,7 +165,6 @@ def main():
 				for j in range(j_nhid):
 					sum_back_ji[0][i] = sum_back_ji[0][i] + \
 										(delta_j[0][j] * wji[j][i])
-				# delta_i[0][i] = oi[i] * (1.0 - oi[i]) * sum_back_ji[0][i]
 			delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
 
 			for b in range(b_ninpdim_1):
@@ -212,7 +185,6 @@ def main():
 	plt.clf()
 	plt.figure(num=1)
 	plt.plot(ite, error_r)
-	# plt.show()
 
 	plt.figure(num=2)
 	plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
