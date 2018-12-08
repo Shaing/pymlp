@@ -67,7 +67,7 @@ def main():
 	b_ninpdim_1 = b_ninpdim + 1 
 	i_nhid = 10
 	i_nhid_1 = i_nhid + 1
-	j_nhid = 4
+	j_nhid = 10
 	j_nhid_1 = j_nhid + 1
 	k_noutdim = 1
 
@@ -95,8 +95,8 @@ def main():
 
 	lower_limit = 0.001
 	iter_max = 3000
-	eta = 0.4
-	beta = 0.6
+	eta = 0.3
+	beta = 0.5
 
 	_iter = 0
 	iter_loop = 0
@@ -121,30 +121,30 @@ def main():
 			ob = np.array([[c[ivector][1]], [c[ivector][2]], [1]])
 			dk = np.array([[c[ivector][3]]])
 
-			# for i in range(i_nhid):
-			# 	si[i] = np.dot(wib[i], ob) 
-			# 	# oi[i] = 1 / (1 + np.exp(-si[i]))
-			# 	oi[i] = sigmoidal(si[i])
-			# oi[-1] = 1.0
+			for i in range(i_nhid):
+				si[i] = np.dot(wib[i], ob) 
+				# oi[i] = 1 / (1 + np.exp(-si[i]))
+				oi[i] = sigmoidal(si[i])
+			oi[-1] = 1.0
 			# print(oi)
 
-			si = np.dot(wib, ob)
-			oi[:-1] = sigmoidal(si)
-			oi[-1] = 1.0
+			# si = np.dot(wib, ob)
+			# oi[:-1] = sigmoidal(si)
+			# oi[-1] = 1.0
 
-			# for j in range(j_nhid):
-			# 	sj[j] = np.dot(wji[j], oi)
-			# 	oj[j] = sigmoidal(sj[j])
-			# oj[-1] = 1.0
-			sj = np.dot(wji, oi)
-			oj[:-1] = sigmoidal(sj)
+			for j in range(j_nhid):
+				sj[j] = np.dot(wji[j], oi)
+				oj[j] = sigmoidal(sj[j])
 			oj[-1] = 1.0
+			# sj = np.dot(wji, oi)
+			# oj[:-1] = sigmoidal(sj)
+			# oj[-1] = 1.0
 
-			# for k in range(k_noutdim):
-			# 	sk[k] = np.dot(wkj[k], oj)
-			# 	ok[k] = sigmoidal(sk[k])
-			sk = np.dot(wkj, oj)
-			ok = sigmoidal(sk)
+			for k in range(k_noutdim):
+				sk[k] = np.dot(wkj[k], oj)
+				ok[k] = sigmoidal(sk[k])
+			# sk = np.dot(wkj, oj)
+			# ok = sigmoidal(sk)
 			
 			error = error + sum(abs(dk - ok))
 
@@ -174,8 +174,8 @@ def main():
 				for k in range(k_noutdim):
 					sum_back_kj[0][j] = sum_back_kj[0][j] + \
 										(delta_k[0][k] * wkj[k][j])
-				# delta_j[0][j] = oj[j] * (1.0 - oj[j]) * sum_back_kj[0][j]
-			delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj
+				delta_j[0][j] = oj[j] * (1.0 - oj[j]) * sum_back_kj[0][j]
+			# delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj
 
 			for i in range(i_nhid_1):
 				for j in range(j_nhid):
@@ -190,8 +190,8 @@ def main():
 				for j in range(j_nhid):
 					sum_back_ji[0][i] = sum_back_ji[0][i] + \
 										(delta_j[0][j] * wji[j][i])
-				# delta_i[0][i] = oi[i] * (1.0 - oi[i]) * sum_back_ji[0][i]
-			delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
+				delta_i[0][i] = oi[i] * (1.0 - oi[i]) * sum_back_ji[0][i]
+			# delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
 
 			for b in range(b_ninpdim_1):
 				for i in range(i_nhid):
@@ -207,8 +207,7 @@ def main():
 		ite.append(_iter)
 		error_avg = error / nvectors
 		error_r.append(error_avg)
-		print('[iter] {}'.format(_iter))
-		print('[error_avg] {}'.format(error_avg))
+		print('[iter] {} [error_avg] {}'.format(_iter, error_avg))
 	plt.clf()
 	plt.figure(num=1)
 	plt.plot(ite, error_r)
@@ -220,21 +219,24 @@ def main():
 		for iy in range(-15, 15):
 			ob = np.array([[ix], [iy], [1]]) 
 				
-			si = np.dot(wib, ob)
-			oi[:-1] = sigmoidal(si)
+			for i in range(i_nhid):
+				si[i] = np.dot(wib[i], ob) 
+				oi[i] = sigmoidal(si[i])
 			oi[-1] = 1.0
 
-			sj = np.dot(wji, oi)
-			oj[:-1] = sigmoidal(sj)
+			for j in range(j_nhid):
+				sj[j] = np.dot(wji[j], oi)
+				oj[j] = sigmoidal(sj[j])
 			oj[-1] = 1.0
 
-			sk = np.dot(wkj, oj)
-			ok = sigmoidal(sk)
+			for k in range(k_noutdim):
+				sk[k] = np.dot(wkj[k], oj)
+				ok[k] = sigmoidal(sk[k])
 
-			if ok[0] > 0.5:
-				plt.plot(ob[0], ob[1], 'mo')
-			elif ok[0] < 0.5:
-				plt.plot(ob[0], ob[1], 'y-')
+			if ok[0][0] > 0.5:
+				plt.plot(ob[0][0], ob[1][0], 'yo')
+			elif ok[0][0] < 0.5:
+				plt.plot(ob[0][0], ob[1][0], 'k*')
 	plt.show()
 
 if __name__ == "__main__":
