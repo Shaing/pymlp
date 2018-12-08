@@ -50,9 +50,9 @@ def sigmoidal(_s):
 	return 1 / (1 + np.exp(-_s))
 
 def main():
-	# c = get_two_spiral_data()
+	c = get_two_spiral_data()
 	# plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
-	c = get_double_moon_data()
+	# c = get_double_moon_data()
 	# plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
 	print(c)
 	print(c.ndim)
@@ -63,9 +63,9 @@ def main():
 	nvectors = c.shape[0] # row size of input pattern
 	b_ninpdim = 2
 	b_ninpdim_1 = b_ninpdim + 1 
-	i_nhid = 10
+	i_nhid = 80
 	i_nhid_1 = i_nhid + 1
-	j_nhid = 2
+	j_nhid = 20
 	j_nhid_1 = j_nhid + 1
 	k_noutdim = 1
 
@@ -92,9 +92,9 @@ def main():
 	dk = np.zeros((k_noutdim, 1))
 
 	lower_limit = 0.001
-	iter_max = 5000
-	eta = 0.3
-	beta = 0.4
+	iter_max = 15000
+	eta = 0.1
+	beta = 0.3
 
 	_iter = 0
 	iter_loop = 0
@@ -122,11 +122,15 @@ def main():
 			dk[0] = c[ivector][2]
 
 			si = np.dot(wib, ob)
-			oi[:-1] = sigmoidal(si)
+			# oi[:-1] = sigmoidal(si)
+			for i in range(i_nhid):
+				oi[i] = max(si[i], 0)
 			oi[-1] = 1.0
 
 			sj = np.dot(wji, oi)
 			oj[:-1] = sigmoidal(sj)
+			# for j in range(j_nhid):
+			# 	oj[j] = max(sj[j])
 			oj[-1] = 1.0
 
 			sk = np.dot(wkj, oj)
@@ -150,6 +154,10 @@ def main():
 				for k in range(k_noutdim):
 					sum_back_kj[0][j] = sum_back_kj[0][j] + \
 										(delta_k[0][k] * wkj[k][j])
+				# if oj[j] > 0:
+				# 	delta_j[0][j] = sum_back_kj[0][j]
+				# else:
+				# 	delta_j[0][j] = 0
 			delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj
 
 			for i in range(i_nhid_1):
@@ -165,7 +173,11 @@ def main():
 				for j in range(j_nhid):
 					sum_back_ji[0][i] = sum_back_ji[0][i] + \
 										(delta_j[0][j] * wji[j][i])
-			delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
+				if oi[i] > 0:
+					delta_i[0][i] = sum_back_ji[0][i]
+				else:
+					delta_i[0][i] = 0 
+			# delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
 
 			for b in range(b_ninpdim_1):
 				for i in range(i_nhid):
@@ -187,19 +199,22 @@ def main():
 	plt.plot(ite, error_r)
 
 	plt.figure(num=2)
-	plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+	# plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+	plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
 	for ix in range(-15, 15):
 		for iy in range(-15, 15):
 			ob = np.array([[ix], [iy], [1]]) 
 				
 			for i in range(i_nhid):
 				si[i] = np.dot(wib[i], ob) 
-				oi[i] = sigmoidal(si[i])
+				# oi[i] = sigmoidal(si[i])
+				oi[i] = max(si[i], 0)
 			oi[-1] = 1.0
 
 			for j in range(j_nhid):
 				sj[j] = np.dot(wji[j], oi)
 				oj[j] = sigmoidal(sj[j])
+				# oj[j] = max(sj[j], 0)
 			oj[-1] = 1.0
 
 			for k in range(k_noutdim):
