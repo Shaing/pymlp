@@ -75,9 +75,9 @@ def main(_argv):
 	nvectors = c.shape[0] # row size of input pattern
 	b_ninpdim = 2
 	b_ninpdim_1 = b_ninpdim + 1 
-	i_nhid = 20
+	i_nhid = 4
 	i_nhid_1 = i_nhid + 1
-	j_nhid = 10
+	j_nhid = 2
 	j_nhid_1 = j_nhid + 1
 	k_noutdim = 1
 
@@ -104,9 +104,9 @@ def main(_argv):
 	dk = np.zeros((k_noutdim, 1))
 
 	lower_limit = 0.001
-	iter_max = 15000
-	eta = 0.1
-	beta = 0.3
+	iter_max = 5000
+	eta = 0.01
+	beta = 0.03
 
 	_iter = 0
 	iter_loop = 0
