@@ -75,9 +75,9 @@ def main(_argv):
 	nvectors = c.shape[0] # row size of input pattern
 	b_ninpdim = 2
 	b_ninpdim_1 = b_ninpdim + 1 
-	i_nhid = 10
+	i_nhid = 20
 	i_nhid_1 = i_nhid + 1
-	j_nhid = 2
+	j_nhid = 10
 	j_nhid_1 = j_nhid + 1
 	k_noutdim = 1
 
@@ -104,9 +104,9 @@ def main(_argv):
 	dk = np.zeros((k_noutdim, 1))
 
 	lower_limit = 0.001
-	iter_max = 5000
-	eta = 0.3
-	beta = 0.4
+	iter_max = 15000
+	eta = 0.1
+	beta = 0.3
 
 	_iter = 0
 	iter_loop = 0
@@ -134,12 +134,16 @@ def main(_argv):
 			dk[0] = c[ivector][2]
 
 			si = np.dot(wib, ob)
-			oi[:-1] = sigmoidal(si)
+			# oi[:-1] = sigmoidal(si)
+			for i in range(i_nhid): # ReLu
+				oi[i] = max(si[i], 0)
 			oi[-1] = 1.0
 
 			sj = np.dot(wji, oi)
-			oj[:-1] = sigmoidal(sj)
-			oj[-1] = 1.0
+			# oj[:-1] = sigmoidal(sj)
+			for j in range(j_nhid): # ReLu
+				oj[j] = max(sj[j])
+			oj[-1] = 1.0 
 
 			sk = np.dot(wkj, oj)
 			ok = sigmoidal(sk)
@@ -162,7 +166,11 @@ def main(_argv):
 				for k in range(k_noutdim):
 					sum_back_kj[0][j] = sum_back_kj[0][j] + \
 										(delta_k[0][k] * wkj[k][j])
-			delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj
+				if oj[j] > 0: # Relu
+					delta_j[0][j] = sum_back_kj[0][j]
+				else:
+					delta_j[0][j] = 0
+			# delta_j = oj[:-1] * (1.0 - oj[:-1]) * sum_back_kj # sig
 
 			for i in range(i_nhid_1):
 				for j in range(j_nhid):
@@ -177,7 +185,11 @@ def main(_argv):
 				for j in range(j_nhid):
 					sum_back_ji[0][i] = sum_back_ji[0][i] + \
 										(delta_j[0][j] * wji[j][i])
-			delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji
+				if oi[i] > 0: # ReLu
+					delta_i[0][i] = sum_back_ji[0][i]
+				else:
+					delta_i[0][i] = 0 
+			# delta_i = oi[:-1] * (1.0 - oi[:-1]) * sum_back_ji # sig
 
 			for b in range(b_ninpdim_1):
 				for i in range(i_nhid):
@@ -211,12 +223,14 @@ def main(_argv):
 				
 			for i in range(i_nhid):
 				si[i] = np.dot(wib[i], ob) 
-				oi[i] = sigmoidal(si[i])
+				# oi[i] = sigmoidal(si[i])
+				oi[i] = max(si[i], 0)
 			oi[-1] = 1.0
 
 			for j in range(j_nhid):
 				sj[j] = np.dot(wji[j], oi)
-				oj[j] = sigmoidal(sj[j])
+				# oj[j] = sigmoidal(sj[j])
+				oj[j] = max(sj[j], 0)
 			oj[-1] = 1.0
 
 			for k in range(k_noutdim):
