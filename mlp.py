@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 def get_two_spiral_data():
 	c1 = np.empty((96, 4))
@@ -13,7 +14,7 @@ def get_two_spiral_data():
 		y = r * np.cos(theta)
 		c1[i] = (x,y,1,0)
 		c2[i] = (-x,-y,0,1)
-	return np.vstack((c1, c2)).copy()
+	return np.vstack((c1, c2)).copy(), 'two spiral'
 
 def get_double_moon_data():
 	N = 250
@@ -44,17 +45,28 @@ def get_double_moon_data():
 	c = np.empty((500, 4))
 	for i in range(500):
 		c[i] = l_col[i]
-	return c.copy()
+	return c.copy(), 'double moon'
 
 def sigmoidal(_s):
 	return 1 / (1 + np.exp(-_s))
 
-def main():
-	# c = get_two_spiral_data()
-	# plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
-	c = get_double_moon_data()
-	# plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+def main(_argv):
+	print('[argv] ', _argv)
+	which_data = None
+	c = None
+
+	if _argv[1] == '-d' and _argv[2] == '1':
+		c, which_data = get_two_spiral_data()
+		# plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
+	elif _argv[1] == '-d' and _argv[2] == '2':
+		c, which_data = get_double_moon_data()
+		# plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+	else:
+		print('unknow date patterns')
+		return
+
 	print(c)
+	print('[data] ', which_data)
 	print(c.ndim)
 	print(c.shape)
 	# plt.show()
@@ -187,7 +199,12 @@ def main():
 	plt.plot(ite, error_r)
 
 	plt.figure(num=2)
-	plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+
+	if which_data == 'two spiral':
+		plt.plot(c[0:95,0], c[0:95,1], 'rs', c[96:,0], c[96:,1], 'b^')
+	elif which_data == 'double moon':
+		plt.plot(c[0:249,0], c[0:249,1], 'rs', c[250:,0], c[250:,1], 'b^')
+
 	for ix in range(-15, 15):
 		for iy in range(-15, 15):
 			ob = np.array([[ix], [iy], [1]]) 
@@ -213,4 +230,8 @@ def main():
 	plt.show()
 
 if __name__ == "__main__":
-	main()
+	if len(sys.argv) < 3:
+		print('mlp.py -d 1, 1: two spiral')
+		print('mlp.py -d 2, 2: double moon')
+	else:
+		main(sys.argv)
