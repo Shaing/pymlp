@@ -17,6 +17,9 @@ python3 mlp.py -d 1
 ```
 python3 mlp.py -d 1
 ```
+
+# Result
+- Double moon  
 ![image](https://user-images.githubusercontent.com/19544390/173752378-306fefac-cac4-4488-be8e-5e03d7611452.png)
 ![image](https://user-images.githubusercontent.com/19544390/173752408-c5e50943-f11b-4991-9ea4-816f74eb6e63.png)
 
