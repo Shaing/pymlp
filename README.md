@@ -18,6 +18,14 @@ python3 mlp.py -d 1
 python3 mlp.py -d 1
 ```
 
+# Configrue Nodes of hidden layer
+  It's two hidden layers, you can modify below values of code chunk for setting nodes what you want to in the network.
+  https://github.com/Shaing/pymlp/blob/ab73f85886bfd9588f89bf10736636cd450e1a3e/mlp.py#L74-L82
+  for above sample means: 2-4-2-1
+  
+  and here's hyperparameter
+  https://github.com/Shaing/pymlp/blob/ab73f85886bfd9588f89bf10736636cd450e1a3e/mlp.py#L106-L113
+
 # Result
 - Double moon  
 ![image](https://user-images.githubusercontent.com/19544390/173752378-306fefac-cac4-4488-be8e-5e03d7611452.png)
